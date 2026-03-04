@@ -1,0 +1,18 @@
+# us-east-1 Configuration Example
+# Copy this file to terraform.tfvars and update the values
+
+# AWS Region
+aws_region = "us-east-1"
+
+# SNS Topic (Verification)
+sns_topic_arn = "arn:aws:sns:us-east-1:ACCOUNT_ID:Candidate-Verification-Topic"
+
+# GitHub Repository (for ECS SNS payload)
+github_repo = "https://github.com/YOUR_USERNAME/aws-assessment"
+
+# Common Tags
+common_tags = {
+  Project     = "AWS-DevOps-Assessment"
+  Environment = "us-east-1"
+  ManagedBy   = "Terraform"
+}

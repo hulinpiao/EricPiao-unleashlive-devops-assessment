@@ -1,0 +1,25 @@
+# eu-west-1 Configuration Example
+# Copy this file to terraform.tfvars and update the values
+
+# AWS Region
+aws_region = "eu-west-1"
+
+# SNS Topic (Verification) - Shared from us-east-1
+sns_topic_arn = "arn:aws:sns:us-east-1:ACCOUNT_ID:Candidate-Verification-Topic"
+
+# GitHub Repository (for ECS SNS payload)
+github_repo = "https://github.com/YOUR_USERNAME/aws-assessment"
+
+# Cognito Configuration 
+cognito_user_pool_arn = "arn:aws:cognito-idp:region:ACCOUNT_ID:userpool/cognito_user_pool_id"
+cognito_user_pool_id  = "cognito_user_pool_id"
+cognito_client_id     = "cognito_client_id"
+cognito_user_pool_url = "cognito_user_pool_url"
+
+# Common Tags
+common_tags = {
+  Project     = "AWS-DevOps-Assessment"
+  Environment = "eu-west-1"
+  ManagedBy   = "Terraform"
+}
+
