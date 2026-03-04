@@ -1,46 +1,46 @@
-# Phase 5: 测试开发
+# Phase 5: Test Development
 
-**预计时间：** 30分钟
-**负责 Agent：** Test Agent
-**依赖：** Phase 3, Phase 4 完成
-
----
-
-## 阶段目标
-
-编写集成测试脚本，验证两个区域的 API 功能和性能。
+**Estimated Time:** 30 minutes
+**Responsible Agent:** Test Agent
+**Dependencies:** Phase 3, Phase 4 complete
 
 ---
 
-## 任务清单
+## Phase Objective
 
-### TEST-001: 编写测试脚本
+Write integration test scripts to verify API functionality and performance in both regions.
 
-| 字段 | 内容 |
-|------|------|
+---
+
+## Task List
+
+### TEST-001: Write Test Script
+
+| Field | Content |
+|-------|---------|
 | **Task ID** | `TEST-001` |
 | **Status** | ⏳ |
 | **Owner** | Test Agent |
 | **Depends On** | `DEP-006`, `DEP-010` |
-| **Description** | 创建集成测试脚本：<br>1. Cognito 登录获取 JWT<br>2. 并发调用 4 个 API 端点<br>3. 验证响应中的 region 字段<br>4. 测量并对比延迟 |
+| **Description** | Create integration test script:<br>1. Cognito login to get JWT<br>2. Concurrent calls to 4 API endpoints<br>3. Verify region field in responses<br>4. Measure and compare latency |
 | **Deliverable** | `tests/integration_test.py` |
-| **Acceptance Criteria** | Python 代码无语法错误、实现了所有必需功能 |
+| **Acceptance Criteria** | Python code has no syntax errors, implements all required functionality |
 
-### TEST-002: 编写 requirements
+### TEST-002: Write Requirements
 
-| 字段 | 内容 |
-|------|------|
+| Field | Content |
+|-------|---------|
 | **Task ID** | `TEST-002` |
 | **Status** | ⏳ |
 | **Owner** | Test Agent |
 | **Depends On** | `TEST-001` |
-| **Description** | 列出测试脚本所需的 Python 依赖 |
+| **Description** | List Python dependencies required by test script |
 | **Deliverable** | `tests/requirements.txt` |
-| **Acceptance Criteria** | 包含 boto3, asyncio 等依赖、版本明确 |
+| **Acceptance Criteria** | Includes boto3, asyncio and other dependencies, versions specified |
 
 ---
 
-## 执行顺序
+## Execution Order
 
 ```
 TEST-001 → TEST-002
@@ -48,43 +48,43 @@ TEST-001 → TEST-002
 
 ---
 
-## 测试内容
+## Test Content
 
 ```python
-# tests/integration_test.py 功能概览
+# tests/integration_test.py functionality overview
 
-1. Cognito 登录
-   - 使用候选人邮箱登录
-   - 获取 JWT Token
+1. Cognito Login
+   - Login using candidate email
+   - Get JWT Token
 
-2. 并发调用 4 个端点
+2. Concurrent calls to 4 endpoints
    - us-east-1: /greet
    - us-east-1: /dispatch
    - eu-west-1: /greet
    - eu-west-1: /dispatch
 
-3. 验证结果
-   - 响应状态码 = 200
-   - region 字段正确
-   - SNS 消息发送成功
+3. Verify Results
+   - Response status code = 200
+   - Region field is correct
+   - SNS message sent successfully
 
-4. 性能分析
-   - 输出每个请求的延迟
-   - 对比两个区域的延迟差异
+4. Performance Analysis
+   - Output latency for each request
+   - Compare latency difference between regions
 ```
 
 ---
 
-## 验收标准
+## Acceptance Criteria
 
-- [ ] 测试脚本可运行
-- [ ] 能验证 4 个端点
-- [ ] 能输出延迟对比数据
-- [ ] requirements.txt 包含所有依赖
+- [ ] Test script is runnable
+- [ ] Can verify 4 endpoints
+- [ ] Can output latency comparison data
+- [ ] requirements.txt includes all dependencies
 
 ---
 
-## 测试执行
+## Test Execution
 
 ```bash
 cd tests
@@ -95,6 +95,6 @@ python integration_test.py --email YOUR_EMAIL --password YOUR_PASSWORD
 
 ---
 
-## 下一阶段
+## Next Phase
 
-完成后进入 **[Phase 6: CI/CD 配置](../06-cicd/plan.md)**
+After completion, proceed to **[Phase 6: CI/CD Configuration](../06-cicd/plan.md)**

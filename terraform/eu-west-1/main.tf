@@ -13,4 +13,4 @@ locals {
 # Module: /greet (DEP-008)
 # Module: /dispatch (DEP-009)
 
-# Outputs (DEP-010 之后添加)
+# Outputs (Add after DEP-010)

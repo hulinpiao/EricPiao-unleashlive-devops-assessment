@@ -2,10 +2,10 @@
 # GitHub Actions CI/CD Pipeline for Terraform
 # PRD: A DevOps engineer doesn't deploy from their laptop.
 #
-# 触发方式：
-# - 自动触发：push 或 PR 到 main 分支 → 运行 Lint/Validate/Security Scan/Plan
-# - 手动触发 (run_tests_only=true)：只运行测试
-# - 手动触发 (apply_changes=true)：执行 terraform apply（需要先运行 Plan）
+# Trigger methods:
+# - Auto trigger: push or PR to main branch → runs Lint/Validate/Security Scan/Plan
+# - Manual trigger (run_tests_only=true): runs tests only
+# - Manual trigger (apply_changes=true): executes terraform apply (requires Plan to run first)
 
 name: Terraform CI/CD Pipeline
 
@@ -17,17 +17,17 @@ on:
   workflow_dispatch:
     inputs:
       run_tests_only:
-        description: '只运行测试（跳过 Lint/Validate/Plan）'
+        description: 'Run tests only (skip Lint/Validate/Plan)'
         required: false
         default: false
         type: boolean
       apply_changes:
-        description: '执行 terraform apply（需要先成功运行 Plan）'
+        description: 'Execute terraform apply (requires successful Plan run first)'
         required: false
         default: false
         type: boolean
       apply_region:
-        description: '要部署的区域'
+        description: 'Region to deploy'
         required: false
         default: 'all'
         type: choice
@@ -36,7 +36,7 @@ on:
           - us-east-1
           - eu-west-1
       environment:
-        description: '测试环境'
+        description: 'Test environment'
         required: false
         default: 'development'
         type: choice
@@ -53,7 +53,7 @@ jobs:
   # Stage 1: Lint/Validate
   # PRD: Run standard IaC formatting and validation checks
   # Note: Does not require AWS credentials
-  # Note: 手动触发测试或 apply 时跳过此步骤
+  # Note: Skipped when manually triggering tests or apply
   # ============================================================================
   lint-validate:
     name: "Lint & Validate"
@@ -87,7 +87,7 @@ jobs:
   # Stage 2: Security Scan
   # PRD: Integrate a lightweight open-source static analysis tool (tfsec)
   # Note: Does not require AWS credentials
-  # Note: 手动触发测试或 apply 时跳过此步骤
+  # Note: Skipped when manually triggering tests or apply
   # ============================================================================
   security-scan:
     name: "Security Scan (tfsec)"
@@ -108,7 +108,7 @@ jobs:
   # PRD: Generate an infrastructure plan/diff
   # Note: Requires AWS credentials to execute
   # Note: continue-on-error: true - PRD allows not providing credentials
-  # Note: 手动触发测试或 apply 时跳过此步骤
+  # Note: Skipped when manually triggering tests or apply
   # ============================================================================
   plan:
     name: "Plan (${{ matrix.region }})"
@@ -148,16 +148,16 @@ jobs:
           retention-days: 7
 
   # ============================================================================
-  # Stage 4: Apply (手动触发)
-  # 在 Plan 成功后，需要手动触发才能执行 terraform apply
-  # 使用 GitHub Environment 实现审批流程（可选）
+  # Stage 4: Apply (Manual trigger)
+  # After Plan succeeds, manual trigger is required to execute terraform apply
+  # Uses GitHub Environment for approval workflow (optional)
   # ============================================================================
   apply:
     name: "Apply (${{ matrix.region }})"
     runs-on: ubuntu-latest
     needs: plan
     if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.apply_changes == 'true' }}
-    # 使用 environment 可以配置手动审批
+    # Using environment allows configuring manual approval
     # environment: production
     strategy:
       matrix:
@@ -208,18 +208,18 @@ jobs:
   # Stage 5: Test Execution
   # PRD: Add a step showing where your automated test script would execute
   #
-  # 触发条件：
-  # - 自动触发：需要 Plan 成功后执行
-  # - 手动触发 (run_tests_only=true)：直接执行，跳过前面步骤
-  # - 手动触发 (apply_changes=true)：在 Apply 成功后执行
+  # Trigger conditions:
+  # - Auto trigger: executes after Plan succeeds
+  # - Manual trigger (run_tests_only=true): executes directly, skips previous steps
+  # - Manual trigger (apply_changes=true): executes after Apply succeeds
   # ============================================================================
   integration-test:
     name: "Integration Tests"
     runs-on: ubuntu-latest
     needs: [plan, apply]
-    # 自动触发时：需要 plan 成功
-    # 手动触发测试时：直接执行
-    # 手动触发 apply 时：在 apply 成功后执行
+    # Auto trigger: requires plan success
+    # Manual trigger for tests: executes directly
+    # Manual trigger for apply: executes after apply success
     if: |
       always() && (
         (github.event_name == 'workflow_dispatch' && github.event.inputs.run_tests_only == 'true') ||
@@ -306,7 +306,7 @@ jobs:
           echo "Environment: $ENVIRONMENT"
           echo ""
 
-          # 检查是否有必要的 secrets
+          # Check if required secrets are available
           if [ -z "$AWS_ACCESS_KEY_ID" ] || [ -z "$TEST_EMAIL" ]; then
             echo "⚠️  Running in PLACEHOLDER mode (missing secrets)"
             echo ""

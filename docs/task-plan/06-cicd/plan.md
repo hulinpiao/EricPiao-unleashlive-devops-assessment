@@ -1,81 +1,82 @@
-# Phase 6: CI/CD 配置
+# Phase 6: CI/CD Configuration
 
-**预计时间：** 15分钟
-**负责 Agent：** Team Lead
-**依赖：** 无（可并行进行）
-**状态：** ⏳ 待开始
-
----
-
-## 阶段目标
-
-创建 GitHub Actions 工作流，实现自动化验证。
-
-> **PRD 要求：** A DevOps engineer doesn't deploy from their laptop. Include a CI/CD pipeline configuration file that defines automated steps.
+**Estimated Time:** 15 minutes
+**Responsible Agent:** Team Lead
+**Dependencies:** None (can run in parallel)
+**Status:** ⏳ Pending
 
 ---
 
-## PRD 要求对照
+## Phase Objective
 
-| PRD 要求 | 实现方式 | Stage |
-|----------|----------|-------|
+Create GitHub Actions workflow for automated validation.
+
+> **PRD Requirement:** A DevOps engineer doesn't deploy from their laptop. Include a CI/CD pipeline configuration file that defines automated steps.
+
+---
+
+## PRD Requirements Mapping
+
+| PRD Requirement | Implementation | Stage |
+|-----------------|----------------|-------|
 | Lint/Validate | `terraform fmt -check` + `terraform validate` | Stage 1 |
 | Security Scan | `aquasecurity/tfsec-action@v1.0.3` | Stage 2 |
-| Plan | `terraform plan -out=tfplan` (两个区域) | Stage 3 |
-| Test Execution Placeholder | 带注释的测试步骤 + 执行说明 | Stage 4 |
+| Plan | `terraform plan -out=tfplan` (both regions) | Stage 3 |
+| Test Execution Placeholder | Commented test step + execution instructions | Stage 4 |
 
 ---
 
-## 任务清单
+## Task List
 
-### CICD-001: 创建 GitHub Actions 工作流
+### CICD-001: Create GitHub Actions Workflow
 
-| 字段 | 内容 |
-|------|------|
+| Field | Content |
+|-------|---------|
 | **Task ID** | `CICD-001` |
 | **Status** | ⏳ |
 | **Owner** | Team Lead |
-| **Description** | 创建 CI/CD 流水线配置文件 `.github/workflows/validate.yml`，包含 4 个 Stages |
+| **Description** | Create CI/CD pipeline configuration file `.github/workflows/validate.yml` with 4 Stages |
 | **Deliverable** | `.github/workflows/validate.yml` |
-| **Acceptance Criteria** | YAML 语法正确、包含 4 个 Stages、符合 PRD 要求 |
+| **Acceptance Criteria** | Correct YAML syntax, includes 4 Stages, meets PRD requirements |
 
 ---
 
-## Pipeline 架构
+## Pipeline Architecture
 
 ```
 Trigger: push / pull_request to main
                 │
                 ▼
 ┌─────────────────────────────────┐
-│  Stage 1: Lint/Validate         │  ← terraform fmt + validate (两个区域)
-│  ❌ 不需要 AWS credentials      │
+│  Stage 1: Lint/Validate         │  ← terraform fmt + validate (both regions)
+│  ❌ No AWS credentials required │
 └─────────────┬───────────────────┘
               │
               ▼
 ┌─────────────────────────────────┐
-│  Stage 2: Security Scan         │  ← tfsec 扫描安全漏洞
-│  ❌ 不需要 AWS credentials      │
+│  Stage 2: Security Scan         │  ← tfsec scan for security vulnerabilities
+│  ❌ No AWS credentials required │
 └─────────────┬───────────────────┘
               │
               ▼
 ┌─────────────────────────────────┐
-│  Stage 3: Plan                  │  ← terraform plan (两个区域并行)
-│  ⚠️ 需要 AWS credentials        │
+│  Stage 3: Plan                  │  ← terraform plan (both regions in parallel)
+│  ⚠️ AWS credentials required   │
 │  (continue-on-error: true)      │
 └─────────────┬───────────────────┘
               │
               ▼
 ┌─────────────────────────────────┐
-│  Stage 4: Test Placeholder      │  ← 测试执行位置占位符
-│  ⚠️ 需要 AWS credentials        │
-│  (只展示架构，不真正执行)        │
+│  Stage 4: Test Placeholder      │  ← Test execution position placeholder
+│  ⚠️ AWS credentials required   │
+│  (architecture demo only,       │
+│   not actually executed)        │
 └─────────────────────────────────┘
 ```
 
 ---
 
-## 工作流配置
+## Workflow Configuration
 
 ```yaml
 # .github/workflows/validate.yml
@@ -211,30 +212,30 @@ jobs:
 
 ---
 
-## 验收标准
+## Acceptance Criteria
 
-- [ ] `.github/workflows/validate.yml` 文件已创建
-- [ ] YAML 语法正确
-- [ ] 包含 4 个 Stages (Lint/Validate, Security Scan, Plan, Test Placeholder)
-- [ ] Stage 1 & 2 不需要 AWS credentials
-- [ ] Stage 3 & 4 设置 `continue-on-error` 或为 placeholder
-
----
-
-## 注意事项
-
-> **PRD 说明：** "You do not need to provide AWS credentials to the CI/CD runner; we simply want to review your pipeline architecture and syntax."
-
-- Stage 1 & 2 可以成功执行（不需要 credentials）
-- Stage 3 (Plan) 会因缺少 credentials 失败，但这是预期的
-- Stage 4 只是占位符，展示测试执行位置
+- [ ] `.github/workflows/validate.yml` file created
+- [ ] Correct YAML syntax
+- [ ] Includes 4 Stages (Lint/Validate, Security Scan, Plan, Test Placeholder)
+- [ ] Stage 1 & 2 do not require AWS credentials
+- [ ] Stage 3 & 4 have `continue-on-error` set or are placeholders
 
 ---
 
-## 下一阶段
+## Notes
 
-完成后进入 **[Phase 7: 文档编写](../07-docs/plan.md)**
+> **PRD Note:** "You do not need to provide AWS credentials to the CI/CD runner; we simply want to review your pipeline architecture and syntax."
+
+- Stage 1 & 2 can execute successfully (no credentials required)
+- Stage 3 (Plan) will fail due to missing credentials, but this is expected
+- Stage 4 is just a placeholder showing test execution position
 
 ---
 
-*更新日期: 2026-03-04*
+## Next Phase
+
+After completion, proceed to **[Phase 7: Documentation](../07-docs/plan.md)**
+
+---
+
+*Last Updated: 2026-03-04*

@@ -6,37 +6,37 @@
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                      用户操作流程                                │
+│                      User Operation Workflow                     │
 └─────────────────────────────────────────────────────────────────┘
 
-  候选人                          招聘团队
+  Candidate                       Recruitment Team
      │                                │
-     │ 1. 部署基础设施                 │
-     │    - us-east-1 (含 Cognito)    │
+     │ 1. Deploy infrastructure       │
+     │    - us-east-1 (incl. Cognito) │
      │    - eu-west-1                 │
      │                                │
-     │ 2. 运行测试脚本                 │
-     │    - Cognito 登录              │
-     │    - 并发调用 4 个 API         │
+     │ 2. Run test script             │
+     │    - Cognito login             │
+     │    - Concurrent calls to 4 APIs│
      │                                │
-     │ 3. 触发验证消息 ────────────────► 4. 接收 4 条 SNS 消息
-     │    - Lambda → SNS (2条)          - 验证候选人信息
-     │    - ECS → SNS (2条)             - 技术审核
+     │ 3. Trigger verification ───────► 4. Receive 4 SNS messages
+     │    - Lambda → SNS (2 messages)   - Verify candidate info
+     │    - ECS → SNS (2 messages)      - Technical review
      │                                    │
-     │                                │ 5. 发送面试邀请
-     │ 6. 销毁基础设施 ◄───────────────────
+     │                                │ 5. Send interview invitation
+     │ 6. Destroy infrastructure ◄───────────
      │    - terraform destroy
 ```
 
-**关键路径：** 登录 → 并发调用 4 个端点 → 发送 4 条 SNS 消息 → 验证
+**Key Path:** Login → Concurrent calls to 4 endpoints → Send 4 SNS messages → Verification
 
 ---
 
-## 2. 系统架构图
+## 2. System Architecture Diagram
 
 ```
 ┌──────────────────────────────────────────────────────────────────┐
-│                         整体架构                                  │
+│                         Overall Architecture                      │
 └──────────────────────────────────────────────────────────────────┘
 
                     Cognito (us-east-1 only)
@@ -70,209 +70,209 @@
 
 ---
 
-## 3. 项目结构
+## 3. Project Structure
 
 ```
 terraform/
-├── modules/              # 共享模块
+├── modules/              # Shared modules
 │   ├── api-gateway/      # HTTP API + Cognito Authorizer
-│   ├── lambda-greet/     # Lambda 1: /greet 处理
-│   ├── lambda-dispatch/  # Lambda 2: /dispatch 处理
-│   ├── dynamodb/         # GreetingLogs 表
+│   ├── lambda-greet/     # Lambda 1: /greet handler
+│   ├── lambda-dispatch/  # Lambda 2: /dispatch handler
+│   ├── dynamodb/         # GreetingLogs table
 │   ├── ecs-fargate/      # ECS Cluster + Task Definition
 │   └── cognito/          # Cognito User Pool + Client
 │
 ├── us-east-1/
-│   ├── main.tf          # 主配置，调用所有模块
+│   ├── main.tf          # Main configuration, calls all modules
 │   ├── backend.tf       # S3 backend: key = "us-east-1/terraform.tfstate"
 │   ├── providers.tf     # provider "aws" { region = "us-east-1" }
-│   ├── cognito.tf       # Cognito 模块调用
-│   ├── greet.tf         # /greet 相关模块调用
-│   ├── dispatch.tf      # /dispatch 相关模块调用
-│   ├── api-gateway.tf   # API Gateway 模块调用
-│   ├── outputs.tf       # 输出配置（包含 Cognito）
-│   └── terraform.tfvars # 变量值
+│   ├── cognito.tf       # Cognito module invocation
+│   ├── greet.tf         # /greet related module invocations
+│   ├── dispatch.tf      # /dispatch related module invocations
+│   ├── api-gateway.tf   # API Gateway module invocation
+│   ├── outputs.tf       # Output configuration (includes Cognito)
+│   └── terraform.tfvars # Variable values
 │
 └── eu-west-1/
-    ├── main.tf          # 主配置，调用所有模块
+    ├── main.tf          # Main configuration, calls all modules
     ├── backend.tf       # S3 backend: key = "eu-west-1/terraform.tfstate"
     ├── providers.tf     # provider "aws" { region = "eu-west-1" }
-    ├── greet.tf         # /greet 相关模块调用
-    ├── dispatch.tf      # /dispatch 相关模块调用
-    ├── api-gateway.tf   # API Gateway 模块调用
-    ├── outputs.tf       # 输出配置
-    └── terraform.tfvars # 变量值（含 Cognito 引用）
+    ├── greet.tf         # /greet related module invocations
+    ├── dispatch.tf      # /dispatch related module invocations
+    ├── api-gateway.tf   # API Gateway module invocation
+    ├── outputs.tf       # Output configuration
+    └── terraform.tfvars # Variable values (includes Cognito reference)
 ```
 
-**设计原则：**
-- 共享模块避免代码重复
-- 按业务（/greet、/dispatch）和组件（api-gateway、cognito）分文件组织
-- 每个区域独立文件夹，清晰隔离
-- Cognito 只在 us-east-1，eu-west-1 通过 tfvars 引用
+**Design Principles:**
+- Shared modules avoid code duplication
+- Organized by business (/greet, /dispatch) and component (api-gateway, cognito) in separate files
+- Each region has independent folder for clear isolation
+- Cognito only in us-east-1, eu-west-1 references via tfvars
 
 ---
 
-## 4. 数据流
+## 4. Data Flow
 
-### 4.1 /greet 流程
+### 4.1 /greet Flow
 
 ```
 [Client] --JWT--> [API Gateway] --> [Lambda Greet]
                                               │
-                                              ├─→ [DynamoDB] 写入日志
+                                              ├─→ [DynamoDB] Write log
                                               │
-                                              └─→ [SNS] 发送验证消息
+                                              └─→ [SNS] Send verification message
 ```
 
-### 4.2 /dispatch 流程
+### 4.2 /dispatch Flow
 
 ```
 [Client] --JWT--> [API Gateway] --> [Lambda Dispatch]
                                               │
-                                              └─→ [ECS] 启动 Fargate 任务
+                                              └─→ [ECS] Start Fargate task
                                                     │
-                                                    └─→ [Container] 发送 SNS 消息
+                                                    └─→ [Container] Send SNS message
 ```
 
 ---
 
-## 5. 部署策略
+## 5. Deployment Strategy
 
-### 5.1 State 管理
+### 5.1 State Management
 
 ```
 S3 Bucket: unleash-assessment-terraform-state
 │
-├── us-east-1/terraform.tfstate   → 包含 Cognito + 所有区域资源
-└── eu-west-1/terraform.tfstate   → 仅包含区域资源
+├── us-east-1/terraform.tfstate   → Contains Cognito + all regional resources
+└── eu-west-1/terraform.tfstate   → Contains only regional resources
 ```
 
-### 5.2 部署步骤
+### 5.2 Deployment Steps
 
 ```bash
-# 1. 创建 S3 State Bucket
+# 1. Create S3 State Bucket
 aws s3api create-bucket \
   --bucket unleash-assessment-terraform-state \
   --region us-east-1
 
-# 2. 部署 us-east-1（包含 Cognito）
+# 2. Deploy us-east-1 (includes Cognito)
 cd us-east-1
 terraform init
 terraform apply
 
-# 3. 复制 Cognito 配置到 eu-west-1
-# 手动将 outputs 中的值填入 eu-west-1/terraform.tfvars
+# 3. Copy Cognito configuration to eu-west-1
+# Manually fill values from outputs into eu-west-1/terraform.tfvars
 
-# 4. 部署 eu-west-1
+# 4. Deploy eu-west-1
 cd ../eu-west-1
 terraform init
 terraform apply
 ```
 
-### 5.3 销毁步骤
+### 5.3 Destruction Steps
 
 ```bash
-# 先销毁 eu-west-1
+# First destroy eu-west-1
 cd eu-west-1
 terraform destroy
 
-# 再销毁 us-east-1
+# Then destroy us-east-1
 cd ../us-east-1
 terraform destroy
 ```
 
 ---
 
-## 6. 组件清单
+## 6. Component Inventory
 
-| 组件 | 类型 | 区域 | 职责 |
-|------|------|------|------|
-| **Cognito User Pool** | Auth | us-east-1 | 身份验证、JWT 签发 |
-| **API Gateway** | Gateway | us-east-1, eu-west-1 | HTTP API 路由、Cognito Authorizer |
-| **Lambda Greet** | Compute | us-east-1, eu-west-1 | /greet 处理、写 DDB、发 SNS |
-| **Lambda Dispatch** | Compute | us-east-1, eu-west-1 | /dispatch 处理、触发 ECS |
-| **ECS Fargate** | Container | us-east-1, eu-west-1 | 运行容器、发 SNS |
-| **DynamoDB** | Database | us-east-1, eu-west-1 | 存储 GreetingLogs |
-| **SNS Topic** | Messaging | us-east-1 | 接收验证消息 |
-
----
-
-## 7. 架构决策记录 (ADR)
-
-| ADR | 决策 | 理由 |
-|-----|------|------|
-| **ADR-001** | 使用两个文件夹实现多区域部署 | 清晰隔离，易于管理，按业务分文件 |
-| **ADR-002** | 使用 S3 作为 State Backend（无锁） | 简单直接，单人开发无需锁 |
-| **ADR-003** | Cognito 集中部署在 us-east-1 | PDF 要求，手动传递配置 |
-| **ADR-004** | ECS Fargate 使用公共子网 | PDF 要求，避免 NAT Gateway 费用 |
-
-### ADR-001: 两个文件夹方案
-
-**决策：** 每个区域独立的文件夹，共享 modules/ 目录
-
-**理由：**
-- 清晰隔离，易于管理
-- 按业务（/greet、/dispatch）分文件组织
-- 使用共享模块避免代码重复
-- Cognito 只在 us-east-1 文件夹中
-
-**后果：**
-- 需要手动传递 Cognito 配置
-- 两次独立的 terraform apply
-
-### ADR-002: S3 State Backend（无锁）
-
-**决策：** 使用 S3 存储 state，不使用 DynamoDB 锁
-
-**理由：**
-- 单人开发，无需状态锁
-- 简单直接，降低复杂度
-- 手动控制并发，同时只操作一个区域
-
-### ADR-003: Cognito 集中部署
-
-**决策：** Cognito 集中在 us-east-1，eu-west-1 跨区域引用
-
-**理由：**
-- PDF 明确要求
-- 延迟测试是评估目的之一，无需优化
-- 手动传递配置最简单
-
-### ADR-004: ECS 公共子网
-
-**决策：** Fargate 任务部署到公共子网
-
-**理由：**
-- PDF 明确要求避免 NAT Gateway 费用
-- Security Group 限制出站流量，只允许 SNS
-- 容器无需暴露端口，安全可控
+| Component | Type | Region | Responsibility |
+|-----------|------|--------|----------------|
+| **Cognito User Pool** | Auth | us-east-1 | Authentication, JWT issuance |
+| **API Gateway** | Gateway | us-east-1, eu-west-1 | HTTP API routing, Cognito Authorizer |
+| **Lambda Greet** | Compute | us-east-1, eu-west-1 | /greet handler, write DDB, send SNS |
+| **Lambda Dispatch** | Compute | us-east-1, eu-west-1 | /dispatch handler, trigger ECS |
+| **ECS Fargate** | Container | us-east-1, eu-west-1 | Run container, send SNS |
+| **DynamoDB** | Database | us-east-1, eu-west-1 | Store GreetingLogs |
+| **SNS Topic** | Messaging | us-east-1 | Receive verification messages |
 
 ---
 
-## 8. 外部依赖
+## 7. Architecture Decision Records (ADR)
 
-| 依赖 | 说明 | 必需 |
-|------|------|------|
-| **AWS Cognito** | 身份验证 | ✅ |
-| **AWS Lambda** | 计算平台 | ✅ |
-| **AWS ECS Fargate** | 容器平台 | ✅ |
-| **AWS DynamoDB** | 数据库 | ✅ |
-| **AWS SNS** | 消息队列 | ✅ |
-| **GitHub** | 代码托管 | ✅ |
-| **Terraform** | IaC 工具 | ✅ |
+| ADR | Decision | Rationale |
+|-----|----------|-----------|
+| **ADR-001** | Use two folders for multi-region deployment | Clear isolation, easy management, organized by business in files |
+| **ADR-002** | Use S3 as State Backend (no lock) | Simple and direct, single developer doesn't need locking |
+| **ADR-003** | Cognito centrally deployed in us-east-1 | PDF requirement, manual configuration passing |
+| **ADR-004** | ECS Fargate uses public subnet | PDF requirement, avoid NAT Gateway costs |
+
+### ADR-001: Two Folder Approach
+
+**Decision:** Each region has independent folder, sharing modules/ directory
+
+**Rationale:**
+- Clear isolation, easy management
+- Organized by business (/greet, /dispatch) in separate files
+- Use shared modules to avoid code duplication
+- Cognito only in us-east-1 folder
+
+**Consequences:**
+- Need to manually pass Cognito configuration
+- Two separate terraform apply executions
+
+### ADR-002: S3 State Backend (No Lock)
+
+**Decision:** Use S3 to store state, no DynamoDB lock
+
+**Rationale:**
+- Single developer, no state locking needed
+- Simple and direct, reduced complexity
+- Manual concurrency control, operate one region at a time
+
+### ADR-003: Centralized Cognito Deployment
+
+**Decision:** Cognito centralized in us-east-1, eu-west-1 cross-region reference
+
+**Rationale:**
+- PDF explicitly requires this
+- Latency testing is part of assessment purpose, no optimization needed
+- Manual configuration passing is simplest
+
+### ADR-004: ECS Public Subnet
+
+**Decision:** Fargate tasks deployed to public subnet
+
+**Rationale:**
+- PDF explicitly requires avoiding NAT Gateway costs
+- Security Group limits outbound traffic, only allow SNS
+- Container doesn't need exposed ports, secure and controllable
 
 ---
 
-## 9. 风险与缓解
+## 8. External Dependencies
 
-| 风险 | 影响 | 缓解措施 |
-|------|------|----------|
-| **成本超支** | 中 | 公共子网避免 NAT，完成后立即 destroy |
-| **跨区域 SNS** | 低 | IAM Role 包含跨区域 SNS 发布权限 |
-| **ECS 启动慢** | 低 | 使用官方 aws-cli 镜像，按需启动 |
+| Dependency | Description | Required |
+|------------|-------------|----------|
+| **AWS Cognito** | Authentication | ✅ |
+| **AWS Lambda** | Compute platform | ✅ |
+| **AWS ECS Fargate** | Container platform | ✅ |
+| **AWS DynamoDB** | Database | ✅ |
+| **AWS SNS** | Message queue | ✅ |
+| **GitHub** | Code hosting | ✅ |
+| **Terraform** | IaC tool | ✅ |
 
 ---
 
-*文档版本: 2.0*
-*创建日期: 2026-03-02*
-*最后更新: 2026-03-02*
+## 9. Risks and Mitigation
+
+| Risk | Impact | Mitigation Measures |
+|------|--------|---------------------|
+| **Cost overrun** | Medium | Use public subnet to avoid NAT, destroy immediately after completion |
+| **Cross-region SNS** | Low | IAM Role includes cross-region SNS publish permission |
+| **ECS slow startup** | Low | Use official aws-cli image, start on demand |
+
+---
+
+*Document Version: 2.0*
+*Created: 2026-03-02*
+*Last Updated: 2026-03-02*

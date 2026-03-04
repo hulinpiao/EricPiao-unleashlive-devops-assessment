@@ -3,120 +3,120 @@
 
 ---
 
-## 1. 项目概述
+## 1. Project Overview
 
-### 1.1 项目名称
+### 1.1 Project Name
 Unleash live - AWS DevOps Engineer Skill Assessment
 
-### 1.2 项目目标
-构建一个多区域AWS基础设施，展示以下能力：
-- IaC（基础设施即代码）最佳实践
-- 多区域部署架构设计
-- 身份验证与安全配置
-- 成本优化的容器编排
-- 自动化测试与CI/CD
+### 1.2 Project Objectives
+Build a multi-region AWS infrastructure to demonstrate the following capabilities:
+- IaC (Infrastructure as Code) best practices
+- Multi-region deployment architecture design
+- Authentication and security configuration
+- Cost-optimized container orchestration
+- Automated testing and CI/CD
 
-### 1.3 约束条件
-- 时间限制：3小时
-- 区域要求：us-east-1 + eu-west-1
-- 提交截止：2026年3月15日
-- 完成后必须立即销毁资源
+### 1.3 Constraints
+- Time limit: 3 hours
+- Region requirements: us-east-1 + eu-west-1
+- Submission deadline: March 15, 2026
+- Resources must be destroyed immediately after completion
 
 ---
 
-## 2. 技术栈
+## 2. Tech Stack
 
-| 组件 | 技术选择 |
-|------|----------|
-| IaC 工具 | Terraform |
-| 版本控制 | Git + GitHub |
+| Component | Technology Choice |
+|-----------|------------------|
+| IaC Tool | Terraform |
+| Version Control | Git + GitHub |
 | CI/CD | GitHub Actions |
-| 测试语言 | Python |
-| 安全扫描 | tfsec |
+| Test Language | Python |
+| Security Scan | tfsec |
 
 ---
 
-## 3. 功能需求
+## 3. Functional Requirements
 
-### 3.1 身份验证模块 (us-east-1)
+### 3.1 Authentication Module (us-east-1)
 
-| 需求 ID | AUTH-001 |
-|---------|----------|
-| **目标** | 创建集中式身份验证服务，两个区域共享 |
-| **核心组件** | Cognito User Pool + Client + 测试用户 |
-| **部署区域** | us-east-1 only |
+| Requirement ID | AUTH-001 |
+|----------------|----------|
+| **Objective** | Create centralized authentication service shared by both regions |
+| **Core Components** | Cognito User Pool + Client + Test User |
+| **Deployment Region** | us-east-1 only |
 
-**功能概要:**
-- 创建用户池和客户端配置
-- 使用候选人真实邮箱创建测试用户
-- 支持用户登录并获取 JWT Token
-
----
-
-### 3.2 计算与数据模块 (多区域)
-
-| 需求 ID | COMPUTE-001 |
-|---------|-------------|
-| **目标** | 在两个区域部署相同架构 |
-| **部署区域** | us-east-1 + eu-west-1 |
-
-**组件概览:**
-
-| 组件 | 功能 | 说明 |
-|------|------|------|
-| **API Gateway** | 入口路由 | 提供 /greet 和 /dispatch 两个端点，使用 Cognito 保护 |
-| **Lambda 1** | /greet 处理器 | 写 DynamoDB + 发 SNS + 返回区域名 |
-| **Lambda 2** | /dispatch 处理器 | 触发 ECS Fargate 任务 |
-| **DynamoDB** | 数据存储 | GreetingLogs 表，存储调用记录 |
-| **ECS Fargate** | 容器任务 | 由 Lambda 2 触发，执行后发 SNS 消息 |
+**Functional Summary:**
+- Create user pool and client configuration
+- Create test user using candidate's real email
+- Support user login and JWT token retrieval
 
 ---
 
-### 3.3 测试模块
+### 3.2 Compute and Data Module (Multi-Region)
 
-| 需求 ID | TEST-001 |
-|---------|----------|
-| **目标** | 验证多区域部署和性能对比 |
-| **测试方式** | Python 脚本并发调用 4 个端点 |
+| Requirement ID | COMPUTE-001 |
+|----------------|-------------|
+| **Objective** | Deploy identical architecture in both regions |
+| **Deployment Regions** | us-east-1 + eu-west-1 |
 
-**测试流程概要:**
-1. 使用候选人邮箱登录 Cognito，获取 JWT
-2. 并发调用两个区域的所有端点
-3. 验证响应中的区域字段正确性
-4. 测量并对比两个区域的延迟差异
+**Component Overview:**
 
----
-
-### 3.4 CI/CD 模块
-
-| 需求 ID | CICD-001 |
-|---------|----------|
-| **目标** | 定义基础设施自动化流程 |
-| **平台** | GitHub Actions |
-
-**流水线步骤:**
-| 步骤 | 工具 | 目的 |
-|------|------|------|
-| Lint/Validate | terraform fmt/validate | 代码规范检查 |
-| Security Scan | tfsec | 安全漏洞扫描 |
-| Plan | terraform plan | 生成变更预览 |
-| Test (Placeholder) | - | 展示测试执行位置 |
+| Component | Function | Description |
+|-----------|----------|-------------|
+| **API Gateway** | Entry routing | Provides /greet and /dispatch endpoints, protected by Cognito |
+| **Lambda 1** | /greet handler | Write to DynamoDB + Send SNS + Return region name |
+| **Lambda 2** | /dispatch handler | Trigger ECS Fargate task |
+| **DynamoDB** | Data storage | GreetingLogs table, stores call records |
+| **ECS Fargate** | Container task | Triggered by Lambda 2, sends SNS message after execution |
 
 ---
 
-### 3.5 功能流程图
+### 3.3 Test Module
+
+| Requirement ID | TEST-001 |
+|----------------|----------|
+| **Objective** | Validate multi-region deployment and performance comparison |
+| **Test Method** | Python script with concurrent calls to 4 endpoints |
+
+**Test Workflow Summary:**
+1. Login to Cognito using candidate's email, get JWT
+2. Concurrently call all endpoints in both regions
+3. Validate correctness of region field in responses
+4. Measure and compare latency differences between regions
+
+---
+
+### 3.4 CI/CD Module
+
+| Requirement ID | CICD-001 |
+|----------------|----------|
+| **Objective** | Define infrastructure automation workflow |
+| **Platform** | GitHub Actions |
+
+**Pipeline Steps:**
+| Step | Tool | Purpose |
+|------|------|---------|
+| Lint/Validate | terraform fmt/validate | Code standard checks |
+| Security Scan | tfsec | Security vulnerability scanning |
+| Plan | terraform plan | Generate change preview |
+| Test (Placeholder) | - | Show test execution location |
+
+---
+
+### 3.5 Functional Flow Diagram
 
 ```
 ┌──────────────────────────────────────────────────────────────────┐
-│                         测试客户端                                 │
-│                    (Python 测试脚本)                              │
+│                         Test Client                               │
+│                    (Python Test Script)                           │
 └───────────────────────────────┬──────────────────────────────────┘
                                 │
                                 ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│                    Cognito (us-east-1)                          │
-│                       身份验证                                   │
-│                    获取 JWT Token                                │
+│                    Cognito (us-east-1)                           │
+│                       Authentication                             │
+│                    Get JWT Token                                 │
 └───────────────────────────────┬──────────────────────────────────┘
                                 │
                     ┌───────────┴───────────┐
@@ -148,21 +148,22 @@ Unleash live - AWS DevOps Engineer Skill Assessment
             ┌───────────────────────┐
             │   SNS Topic            │
             │  (us-east-1)           │
-            │   发送验证消息          │
+            │   Send verification    │
+            │   message              │
             └───────────────────────┘
 ```
 
 ---
 
-## 4. SNS 集成规范
+## 4. SNS Integration Specification
 
 ### 4.1 Topic ARN
 
-SNS Topic 用于验证 | `arn:aws:sns:us-east-1:160676960050:Candidate-Verification-Topic` 
+SNS Topic for verification | `arn:aws:sns:us-east-1:160676960050:Candidate-Verification-Topic`
 
-### 4.2 Payload 格式
+### 4.2 Payload Format
 
-**Lambda 发送的 Payload:**
+**Payload sent by Lambda:**
 ```json
 {
   "email": "candidate@example.com",
@@ -172,7 +173,7 @@ SNS Topic 用于验证 | `arn:aws:sns:us-east-1:160676960050:Candidate-Verificat
 }
 ```
 
-**ECS 发送的 Payload:**
+**Payload sent by ECS:**
 ```json
 {
   "email": "candidate@example.com",
@@ -184,79 +185,79 @@ SNS Topic 用于验证 | `arn:aws:sns:us-east-1:160676960050:Candidate-Verificat
 
 ---
 
-## 5. 安全要求
+## 5. Security Requirements
 
-| 组件 | 安全要求 | 来源 |
-|------|----------|------|
-| **API Gateway** | 使用 Cognito User Pool 进行身份验证 | PDF 要求 |
-| **SNS** | 发布消息到指定的 Verification Topic | PDF 要求 |
-| **Lambda** | 使用最小权限 IAM Role（仅授予 DynamoDB 写入和 SNS 发布权限） | 最佳实践 |
-| **ECS Fargate** | Task Role 使用最小权限（仅授予 SNS 发布权限） | 最佳实践 |
-
----
-
-## 6. 成本优化
-
-| 组件 | 优化策略 |
-|------|----------|
-| ECS Fargate | 使用公共子网，避免 NAT Gateway |
-| Lambda | 按实际使用配置内存和超时 |
-| DynamoDB | 按需计费模式 |
-| API Gateway | 按使用计费（无需额外优化） |
+| Component | Security Requirement | Source |
+|-----------|---------------------|--------|
+| **API Gateway** | Use Cognito User Pool for authentication | PDF requirement |
+| **SNS** | Publish messages to specified Verification Topic | PDF requirement |
+| **Lambda** | Use least privilege IAM Role (only DynamoDB write and SNS publish permissions) | Best practice |
+| **ECS Fargate** | Task Role uses least privilege (only SNS publish permission) | Best practice |
 
 ---
 
-## 7. 验收标准
+## 6. Cost Optimization
 
-### 7.1 基础设施验收
+| Component | Optimization Strategy |
+|-----------|----------------------|
+| ECS Fargate | Use public subnet, avoid NAT Gateway |
+| Lambda | Configure memory and timeout based on actual usage |
+| DynamoDB | On-demand billing mode |
+| API Gateway | Pay-per-use (no additional optimization needed) |
 
-#### 部署成功检查
+---
+
+## 7. Acceptance Criteria
+
+### 7.1 Infrastructure Acceptance
+
+#### Deployment Success Check
 ```
-执行命令: terraform apply
+Command: terraform apply
 
-预期结果:
-✅ us-east-1 资源创建成功
-✅ eu-west-1 资源创建成功
-✅ 无错误或警告
+Expected Results:
+✅ us-east-1 resources created successfully
+✅ eu-west-1 resources created successfully
+✅ No errors or warnings
 ```
 
-#### 组件可用性检查
+#### Component Availability Check
 
-| 组件 | 验证方式 | 预期结果 |
-|------|----------|----------|
-| Cognito | 使用测试用户登录 | 成功获取 JWT Token |
-| API Gateway (us-east-1) | 带JWT调用 /greet | 返回 200 + "us-east-1" |
-| API Gateway (eu-west-1) | 带JWT调用 /greet | 返回 200 + "eu-west-1" |
-| DynamoDB | 检查表项 | GreetingLogs 有新记录 |
-| ECS Fargate | 调用 /dispatch | 任务启动并完成 |
+| Component | Validation Method | Expected Result |
+|-----------|-------------------|-----------------|
+| Cognito | Login with test user | Successfully obtain JWT Token |
+| API Gateway (us-east-1) | Call /greet with JWT | Return 200 + "us-east-1" |
+| API Gateway (eu-west-1) | Call /greet with JWT | Return 200 + "eu-west-1" |
+| DynamoDB | Check table items | GreetingLogs has new records |
+| ECS Fargate | Call /dispatch | Task starts and completes |
 
 ---
 
-### 7.2 测试脚本验收
+### 7.2 Test Script Acceptance
 
-#### 测试前准备
+#### Pre-Test Preparation
 
-| 步骤 | 说明 |
-|------|------|
-| 1 | 确保两个区域的基础设施已部署完成 |
-| 2 | 获取 Cognito 测试用户的邮箱和临时密码 |
-| 3 | 确认测试脚本的依赖已安装 (`pip install -r requirements.txt`) |
+| Step | Description |
+|------|-------------|
+| 1 | Ensure infrastructure is deployed in both regions |
+| 2 | Obtain test user email and temporary password from Cognito |
+| 3 | Confirm test script dependencies are installed (`pip install -r requirements.txt`) |
 
-#### 测试执行
+#### Test Execution
 
 ```bash
-# 运行测试脚本
+# Run test script
 cd tests
 python integration_test.py --email YOUR_EMAIL --password YOUR_PASSWORD
 ```
 
-#### 测试覆盖范围
+#### Test Coverage
 
 ```
-测试脚本将验证以下内容：
+Test script will validate the following:
 
 ┌─────────────────────────────────────────────────────────────────┐
-│                        测试矩阵                                  │
+│                        Test Matrix                               │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                 │
 │  ┌─────────────────┐    ┌─────────────────┐                    │
@@ -269,163 +270,163 @@ python integration_test.py --email YOUR_EMAIL --password YOUR_PASSWORD
 │           └───────────┬───────────┘                            │
 │                       ▼                                        │
 │              ┌──────────────────────┐                          │
-│              │   验证点：            │                          │
-│              │   1. 响应状态码 200   │                          │
-│              │   2. region 字段正确   │                          │
-│              │   3. SNS 消息发送成功  │                          │
-│              │   4. 延迟数据记录      │                          │
+│              │   Validation Points: │                          │
+│              │   1. Response status 200                        │
+│              │   2. Correct region field                       │
+│              │   3. SNS message sent successfully              │
+│              │   4. Latency data recorded                      │
 │              └──────────────────────┘                          │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-#### 预期输出
+#### Expected Output
 
 ```
-=== 测试报告 ===
+=== Test Report ===
 
-[1] 身份验证
-  ✅ Cognito 登录成功
+[1] Authentication
+  ✅ Cognito login successful
   JWT: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 
-[2] API 调用测试
-  端点                          状态    延迟      Region
-  ──────────────────────────────────────────────────────
+[2] API Call Tests
+  Endpoint                          Status    Latency      Region
+  ──────────────────────────────────────────────────────────────
   us-east-1  /greet            ✅      245ms    us-east-1
   us-east-1  /dispatch         ✅     1850ms    us-east-1
   eu-west-1  /greet            ✅      389ms    eu-west-1
   eu-west-1  /dispatch         ✅     2100ms    eu-west-1
 
-[3] 性能分析
-  Lambda 延迟对比:
+[3] Performance Analysis
+  Lambda Latency Comparison:
     us-east-1: 245ms
     eu-west-1: 389ms
-    差异: +144ms (eu-west-1 慢 58.8%)
+    Difference: +144ms (eu-west-1 58.8% slower)
 
-  ECS 延迟对比:
+  ECS Latency Comparison:
     us-east-1: 1850ms
     eu-west-1: 2100ms
-    差异: +250ms (eu-west-1 慢 13.5%)
+    Difference: +250ms (eu-west-1 13.5% slower)
 
-[4] SNS 验证
-  ✅ 4/4 消息已发送至 Unleash live Topic
-  ✅ 检查邮箱以接收确认通知
+[4] SNS Verification
+  ✅ 4/4 messages sent to Unleash live Topic
+  ✅ Check email to receive confirmation notification
 
-=== 测试完成 ===
-总耗时: 8.2秒
+=== Test Complete ===
+Total Time: 8.2 seconds
 ```
 
-#### 测试验收标准
+#### Test Acceptance Criteria
 
-| 检查项 | 通过标准 |
-|--------|----------|
-| 并发调用 | 4 个端点全部成功调用 |
-| 状态码 | 所有 API 返回 200 |
-| Region 验证 | 响应中的 region 字段与请求区域一致 |
-| SNS 发送 | Unleash live 收到 4 条消息 |
-| 延迟输出 | 控制台输出完整的延迟对比数据 |
+| Check Item | Pass Criteria |
+|------------|---------------|
+| Concurrent calls | All 4 endpoints successfully called |
+| Status code | All APIs return 200 |
+| Region validation | Region field in response matches request region |
+| SNS sending | Unleash live received 4 messages |
+| Latency output | Complete latency comparison data output to console |
 
 ---
 
-### 7.3 SNS 消息验收
+### 7.3 SNS Message Acceptance
 
-#### 如何确认 SNS 发送成功？
+#### How to Confirm SNS Sending Success?
 
-**方式 1: 通过测试脚本输出**
+**Method 1: Via Test Script Output**
 ```
-测试脚本会显示类似输出：
-✅ 4/4 消息已发送至 Unleash live Topic
+Test script will display output like:
+✅ 4/4 messages sent to Unleash live Topic
 ```
 
-**方式 2: 等待招聘团队确认**
-- Unleash live 会自动监控 SNS Topic
-- 如果消息格式正确，他们会收到通知
-- 通过技术审核的候选人会在截止日期后收到面试邀请
+**Method 2: Wait for Recruitment Team Confirmation**
+- Unleash live will automatically monitor SNS Topic
+- If message format is correct, they will receive notification
+- Candidates who pass technical review will receive interview invitation after deadline
 
-#### SNS 消息格式要求
+#### SNS Message Format Requirements
 
-测试脚本触发的每条消息必须包含：
+Each message triggered by the test script must contain:
 
-| 字段 | 说明 | 示例 |
-|------|------|------|
-| email | 候选人邮箱 | `candidate@example.com` |
-| source | 消息来源 | `Lambda` 或 `ECS` |
-| region | 执行区域 | `us-east-1` 或 `eu-west-1` |
-| repo | GitHub 仓库 | `https://github.com/user/aws-assessment` |
+| Field | Description | Example |
+|-------|-------------|---------|
+| email | Candidate email | `candidate@example.com` |
+| source | Message source | `Lambda` or `ECS` |
+| region | Execution region | `us-east-1` or `eu-west-1` |
+| repo | GitHub repository | `https://github.com/user/aws-assessment` |
 
 ---
 
-### 7.4 CI/CD 验收
+### 7.4 CI/CD Acceptance
 
-#### GitHub Actions 工作流验证
+#### GitHub Actions Workflow Validation
 
 ```bash
-# 推送代码后，在 GitHub Actions 页面检查
+# After pushing code, check GitHub Actions page
 ```
 
-**验证清单:**
+**Validation Checklist:**
 
-| 步骤 | 检查内容 |
-|------|----------|
-| Lint | 代码格式化检查通过 |
-| Security Scan | tfsec 无严重/高危漏洞 |
-| Plan | terraform plan 成功生成预览 |
-
----
-
-### 7.5 文档验收
-
-#### README.md 必需内容
-
-| 章节 | 内容要求 |
-|------|----------|
-| 项目简介 | 简要说明这是一个 AWS DevOps Assessment |
-| 架构图 | 展示两个区域的部署架构 |
-| 前置条件 | AWS CLI、Terraform、Python 等工具版本 |
-| 部署步骤 | `terraform init` → `apply` 的完整命令 |
-| 测试说明 | 如何运行测试脚本、需要什么参数 |
-| 清理说明 | `terraform destroy` 命令和注意事项 |
+| Step | Check Content |
+|------|---------------|
+| Lint | Code formatting check passed |
+| Security Scan | tfsec no critical/high vulnerabilities |
+| Plan | terraform plan successfully generated preview |
 
 ---
 
-## 8. 交付方式
+### 7.5 Documentation Acceptance
 
-### 8.1 交付清单
+#### README.md Required Content
 
-| 文件/目录 | 说明 | 必需 |
-|-----------|------|------|
-| `terraform/` | IaC 代码（包含 main.tf, providers.tf, variables.tf, outputs.tf, backend.tf） | ✅ |
-| `terraform/modules/` | Terraform 模块（cognito, regional-stack） | ✅ |
-| `terraform/environments/` | 环境配置文件（us-east-1, eu-west-1） | ✅ |
-| `tests/integration_test.py` | 测试脚本 | ✅ |
-| `tests/requirements.txt` | Python 依赖 | ✅ |
-| `.github/workflows/deploy.yml` | CI/CD 配置 | ✅ |
-| `README.md` | 使用文档 | ✅ |
-
-### 8.2 提交检查清单
-
-在提交仓库链接前，确认以下事项：
-- [ ] 仓库是公开的 (Public)
-- [ ] README.md 包含完整的部署和测试说明
-- [ ] 测试脚本可以成功运行
-- [ ] SNS 消息已成功发送（4条）
-- [ ] 资源已销毁（terraform destroy）
-- [ ] 代码提交记录清晰
+| Section | Content Requirements |
+|---------|---------------------|
+| Project Introduction | Brief description that this is an AWS DevOps Assessment |
+| Architecture Diagram | Show deployment architecture for both regions |
+| Prerequisites | AWS CLI, Terraform, Python and other tool versions |
+| Deployment Steps | Complete commands from `terraform init` → `apply` |
+| Test Instructions | How to run test scripts, what parameters are needed |
+| Cleanup Instructions | `terraform destroy` command and notes |
 
 ---
 
-## 9. 重要提醒
+## 8. Delivery Method
 
-⚠️ **资源清理：**
-测试完成后必须执行 `terraform destroy` 避免持续费用
+### 8.1 Delivery Checklist
 
-📧 **验证方式：**
-通过 SNS Topic 接收的消息自动验证完成情况
+| File/Directory | Description | Required |
+|----------------|-------------|----------|
+| `terraform/` | IaC code (including main.tf, providers.tf, variables.tf, outputs.tf, backend.tf) | ✅ |
+| `terraform/modules/` | Terraform modules (cognito, regional-stack) | ✅ |
+| `terraform/environments/` | Environment configuration files (us-east-1, eu-west-1) | ✅ |
+| `tests/integration_test.py` | Test script | ✅ |
+| `tests/requirements.txt` | Python dependencies | ✅ |
+| `.github/workflows/deploy.yml` | CI/CD configuration | ✅ |
+| `README.md` | Usage documentation | ✅ |
 
-📅 **截止日期：**
-2026年3月15日
+### 8.2 Submission Checklist
+
+Before submitting repository link, confirm the following:
+- [ ] Repository is public
+- [ ] README.md contains complete deployment and test instructions
+- [ ] Test script can run successfully
+- [ ] SNS messages sent successfully (4 messages)
+- [ ] Resources destroyed (terraform destroy)
+- [ ] Clear commit history
 
 ---
 
-*文档版本: 3.0*
-*创建日期: 2026-03-02*
-*最后更新: 2026-03-02*
+## 9. Important Reminders
+
+⚠️ **Resource Cleanup:**
+Must execute `terraform destroy` after testing to avoid ongoing costs
+
+📧 **Verification Method:
+Automatic verification through messages received via SNS Topic
+
+📅 **Deadline:**
+March 15, 2026
+
+---
+
+*Document Version: 3.0*
+*Created: 2026-03-02*
+*Last Updated: 2026-03-02*

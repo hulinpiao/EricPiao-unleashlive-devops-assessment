@@ -1,121 +1,121 @@
-# Phase 2: 共享模块开发
+# Phase 2: Shared Module Development
 
-**预计时间：** 50分钟
-**负责 Agent：** IaC Agent
-**依赖：** Phase 1 完成
-**状态：** ✅ 已完成
-
----
-
-## 阶段目标
-
-开发 5 个 Terraform 共享模块，用于两个区域的部署。
-
-> **注意：** Cognito 不作为共享模块，将在 Phase 3 (us-east-1) 中直接配置。
+**Estimated Time:** 50 minutes
+**Responsible Agent:** IaC Agent
+**Dependencies:** Phase 1 complete
+**Status:** ✅ Complete
 
 ---
 
-## 模块清单
+## Phase Objective
 
-| 模块 | 文件 | 说明 |
-|------|------|------|
-| **dynamodb** | modules/dynamodb/ | GreetingLogs 表 |
-| **lambda-greet** | modules/lambda-greet/ | /greet 处理函数 |
-| **lambda-dispatch** | modules/lambda-dispatch/ | /dispatch 处理函数 |
-| **api-gateway** | modules/api-gateway/ | HTTP API + 路由 |
+Develop 5 Terraform shared modules for deployment in both regions.
+
+> **Note:** Cognito is not a shared module and will be configured directly in Phase 3 (us-east-1).
+
+---
+
+## Module List
+
+| Module | Files | Description |
+|--------|-------|-------------|
+| **dynamodb** | modules/dynamodb/ | GreetingLogs table |
+| **lambda-greet** | modules/lambda-greet/ | /greet handler function |
+| **lambda-dispatch** | modules/lambda-dispatch/ | /dispatch handler function |
+| **api-gateway** | modules/api-gateway/ | HTTP API + routes |
 | **ecs-fargate** | modules/ecs-fargate/ | ECS Cluster + Task Definition |
 
 ---
 
-## 任务清单
+## Task List
 
-### IAC-001: DynamoDB 模块
+### IAC-001: DynamoDB Module
 
-| 字段 | 内容 |
-|------|------|
+| Field | Content |
+|-------|---------|
 | **Task ID** | `IAC-001` |
-| **Status** | ✅ 完成 |
+| **Status** | ✅ Complete |
 | **Owner** | IaC Agent |
 | **Skill** | `/terraform-engineer` |
-| **Description** | 创建 GreetingLogs 表模块，按需计费 |
+| **Description** | Create GreetingLogs table module with on-demand billing |
 | **Deliverable** | `modules/dynamodb/{main.tf,variables.tf,outputs.tf}` |
-| **Acceptance Criteria** | fmt/validate 通过 |
+| **Acceptance Criteria** | fmt/validate passes |
 
-### IAC-002: Lambda Greet 模块
+### IAC-002: Lambda Greet Module
 
-| 字段 | 内容 |
-|------|------|
+| Field | Content |
+|-------|---------|
 | **Task ID** | `IAC-002` |
-| **Status** | ✅ 完成 |
+| **Status** | ✅ Complete |
 | **Owner** | IaC Agent |
 | **Skill** | `/terraform-engineer` |
-| **Description** | 创建 /greet Lambda 函数（Python 3.11） |
+| **Description** | Create /greet Lambda function (Python 3.11) |
 | **Deliverable** | `modules/lambda-greet/{main.tf,variables.tf,outputs.tf,lambda.py}` |
-| **Acceptance Criteria** | Lambda 代码能写 DDB + 发 SNS |
+| **Acceptance Criteria** | Lambda code can write to DDB + send SNS |
 
-### IAC-003: Lambda Dispatch 模块
+### IAC-003: Lambda Dispatch Module
 
-| 字段 | 内容 |
-|------|------|
+| Field | Content |
+|-------|---------|
 | **Task ID** | `IAC-003` |
-| **Status** | ✅ 完成 |
+| **Status** | ✅ Complete |
 | **Owner** | IaC Agent |
 | **Skill** | `/terraform-engineer` |
-| **Description** | 创建 /dispatch Lambda 函数（触发 ECS） |
+| **Description** | Create /dispatch Lambda function (triggers ECS) |
 | **Deliverable** | `modules/lambda-dispatch/{main.tf,variables.tf,outputs.tf,lambda.py}` |
-| **Acceptance Criteria** | Lambda 代码能调用 ECS RunTask |
+| **Acceptance Criteria** | Lambda code can invoke ECS RunTask |
 
-### IAC-004: API Gateway 模块
+### IAC-004: API Gateway Module
 
-| 字段 | 内容 |
-|------|------|
+| Field | Content |
+|-------|---------|
 | **Task ID** | `IAC-004` |
-| **Status** | ✅ 完成 |
+| **Status** | ✅ Complete |
 | **Owner** | IaC Agent |
 | **Skill** | `/terraform-engineer` |
 | **Depends On** | `IAC-002`, `IAC-003` |
-| **Description** | 创建 HTTP API + /greet 和 /dispatch 路由 + Cognito Authorizer |
+| **Description** | Create HTTP API + /greet and /dispatch routes + Cognito Authorizer |
 | **Deliverable** | `modules/api-gateway/{main.tf,variables.tf,outputs.tf}` |
-| **Acceptance Criteria** | API Gateway 配置两个路由 |
+| **Acceptance Criteria** | API Gateway configured with two routes |
 
-### IAC-005: ECS Fargate 模块
+### IAC-005: ECS Fargate Module
 
-| 字段 | 内容 |
-|------|------|
+| Field | Content |
+|-------|---------|
 | **Task ID** | `IAC-005` |
-| **Status** | ✅ 完成 |
+| **Status** | ✅ Complete |
 | **Owner** | IaC Agent |
 | **Skill** | `/terraform-engineer` |
-| **Description** | 创建 ECS Cluster + Task Definition（公共子网） |
+| **Description** | Create ECS Cluster + Task Definition (public subnet) |
 | **Deliverable** | `modules/ecs-fargate/{main.tf,variables.tf,outputs.tf,userdata.sh}` |
-| **Acceptance Criteria** | 使用 amazon/aws-cli 镜像、公共子网部署 |
+| **Acceptance Criteria** | Uses amazon/aws-cli image, deployed in public subnet |
 
 ---
 
-## 执行顺序
+## Execution Order
 
 ```
 IAC-001 ✅ ──┐
 IAC-002 ✅ ──┼─→ IAC-004 ✅ ──┐
-IAC-003 ✅ ──┤                ├──→ 完成
+IAC-003 ✅ ──┤                ├──→ Complete
              │                │
 IAC-005 ✅ ───┴────────────────┘
 ```
 
 ---
 
-## 验收标准
+## Acceptance Criteria
 
-- [x] 所有模块 `terraform fmt/validate` 通过
-- [x] 模块包含必需的元数据
-- [x] Lambda 代码逻辑正确
+- [x] All modules pass `terraform fmt/validate`
+- [x] Modules include required metadata
+- [x] Lambda code logic is correct
 
 ---
 
-## 交付物
+## Deliverables
 
-| 模块 | 文件 |
-|------|------|
+| Module | Files |
+|--------|-------|
 | dynamodb | main.tf, variables.tf, outputs.tf |
 | lambda-greet | main.tf, variables.tf, outputs.tf, lambda.py |
 | lambda-dispatch | main.tf, variables.tf, outputs.tf, lambda.py |
@@ -124,6 +124,6 @@ IAC-005 ✅ ───┴────────────────┘
 
 ---
 
-## 下一阶段
+## Next Phase
 
-✅ **已完成** → 进入 **[Phase 3: us-east-1 部署](../03-useast1/plan.md)**
+✅ **Complete** → Proceed to **[Phase 3: us-east-1 Deployment](../03-useast1/plan.md)**

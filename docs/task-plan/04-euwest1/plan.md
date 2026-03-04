@@ -1,101 +1,101 @@
-# Phase 4: eu-west-1 部署
+# Phase 4: eu-west-1 Deployment
 
-**预计时间：** 20分钟
-**负责 Agent：** IaC Agent（代码）、Team Lead（执行）
-**依赖：** Phase 3 完成
-**状态：** ✅ 已完成
-
----
-
-## 阶段目标
-
-在 eu-west-1 区域部署基础设施（引用 us-east-1 的 Cognito）。
+**Estimated Time:** 20 minutes
+**Responsible Agent:** IaC Agent (code), Team Lead (execution)
+**Dependencies:** Phase 3 complete
+**Status:** ✅ Complete
 
 ---
 
-## 任务清单
+## Phase Objective
 
-### DEP-007: 主配置文件
+Deploy infrastructure in eu-west-1 region (referencing us-east-1 Cognito).
 
-| 字段 | 内容 |
-|------|------|
+---
+
+## Task List
+
+### DEP-007: Main Configuration Files
+
+| Field | Content |
+|-------|---------|
 | **Task ID** | `DEP-007` |
-| **Status** | ✅ 完成 |
+| **Status** | ✅ Complete |
 | **Owner** | IaC Agent |
 | **Skill** | `/terraform-engineer` |
 | **Depends On** | `DEP-006` (Phase 3) |
-| **Description** | 创建 eu-west-1 主配置、backend、providers |
+| **Description** | Create eu-west-1 main configuration, backend, providers |
 | **Deliverable** | `eu-west-1/{main.tf,backend.tf,providers.tf,terraform.tfvars,variables.tf}` |
-| **Acceptance Criteria** | `terraform init` 成功、Cognito 配置已传入 |
+| **Acceptance Criteria** | `terraform init` succeeds, Cognito configuration passed in |
 
-### DEP-008: /greet 业务配置
+### DEP-008: /greet Business Configuration
 
-| 字段 | 内容 |
-|------|------|
+| Field | Content |
+|-------|---------|
 | **Task ID** | `DEP-008` |
-| **Status** | ✅ 完成 |
+| **Status** | ✅ Complete |
 | **Owner** | IaC Agent |
 | **Skill** | `/terraform-engineer` |
 | **Depends On** | `DEP-007` |
-| **Description** | 配置 /greet 端点（引用 us-east-1 的 Cognito） |
+| **Description** | Configure /greet endpoint (referencing us-east-1 Cognito) |
 | **Deliverable** | `eu-west-1/greet.tf` |
-| **Acceptance Criteria** | 端点配置正确、Cognito Authorizer 引用 us-east-1 |
-| **实际输出** | Lambda: `aws-devops-assessment-greet-eu`, Table: `GreetingLogs` |
+| **Acceptance Criteria** | Endpoint configured correctly, Cognito Authorizer references us-east-1 |
+| **Actual Output** | Lambda: `aws-devops-assessment-greet-eu`, Table: `GreetingLogs` |
 
-### DEP-009: /dispatch 业务配置
+### DEP-009: /dispatch Business Configuration
 
-| 字段 | 内容 |
-|------|------|
+| Field | Content |
+|-------|---------|
 | **Task ID** | `DEP-009` |
-| **Status** | ✅ 完成 |
+| **Status** | ✅ Complete |
 | **Owner** | IaC Agent |
 | **Skill** | `/terraform-engineer` |
 | **Depends On** | `DEP-007` |
-| **Description** | 配置 /dispatch 端点（引用 us-east-1 的 Cognito） |
+| **Description** | Configure /dispatch endpoint (referencing us-east-1 Cognito) |
 | **Deliverable** | `eu-west-1/dispatch.tf` |
-| **Acceptance Criteria** | 端点配置正确、Cognito Authorizer 引用 us-east-1 |
-| **实际输出** | Lambda: `aws-devops-assessment-dispatch-eu`, ECS: `aws-devops-assessment-ecs-eu` |
+| **Acceptance Criteria** | Endpoint configured correctly, Cognito Authorizer references us-east-1 |
+| **Actual Output** | Lambda: `aws-devops-assessment-dispatch-eu`, ECS: `aws-devops-assessment-ecs-eu` |
 
-### DEP-010: 执行部署
+### DEP-010: Execute Deployment
 
-| 字段 | 内容 |
-|------|------|
+| Field | Content |
+|-------|---------|
 | **Task ID** | `DEP-010` |
-| **Status** | ✅ 完成 |
+| **Status** | ✅ Complete |
 | **Owner** | Team Lead |
 | **Depends On** | `DEP-007`, `DEP-008`, `DEP-009` |
-| **Description** | 执行 `terraform init` 和 `terraform apply` |
-| **Deliverable** | eu-west-1 所有资源部署成功 |
-| **Acceptance Criteria** | 资源创建成功、eu-west-1 API 可访问 |
-| **部署时间** | 2026-03-04 |
+| **Description** | Execute `terraform init` and `terraform apply` |
+| **Deliverable** | All eu-west-1 resources deployed successfully |
+| **Acceptance Criteria** | Resources created successfully, eu-west-1 API accessible |
+| **Deployment Date** | 2026-03-04 |
 | **API URL** | `https://riqs64byr7.execute-api.eu-west-1.amazonaws.com/$default` |
 
 ---
 
-## 执行顺序
+## Execution Order
 
 ```
-DEP-007 ✅ (主配置，含 Cognito 引用)
+DEP-007 ✅ (Main Config, includes Cognito reference)
     │
     ├──→ DEP-008 ✅ (greet) ──┐
-    │                       │
-    └──→ DEP-009 ✅ (dispatch)├──→ DEP-010 ✅ (部署)
-                           │
+    │                        │
+    └──→ DEP-009 ✅ (dispatch)├──→ DEP-010 ✅ (Deployment)
+                            │
 ```
 
 ---
 
-## 验收标准
+## Acceptance Criteria
 
-- [x] `terraform apply` 无错误
-- [x] 资源创建成功
-- [x] eu-west-1 API 可访问
-- [x] 两个区域的 /greet 和 /dispatch 端点都正常
-- [x] AWS 基础设施与 Terraform 代码完全对应
+- [x] `terraform apply` without errors
+- [x] Resources created successfully
+- [x] eu-west-1 API accessible
+- [x] Both regional /greet and /dispatch endpoints working correctly
+- [x] AWS infrastructure matches Terraform code exactly
 
 ---
 
-## 部署输出
+## Deployment Output
 
 ### API Gateway
 ```
@@ -117,22 +117,22 @@ Cluster:        aws-devops-assessment-ecs-eu
 Task Def:       aws-devops-assessment-dispatch-task-eu:1
 ```
 
-### 跨区域配置
+### Cross-Region Configuration
 ```
-Cognito:    使用 us-east-1 的 User Pool (us-east-1_l3E5QLXQS)
-SNS Topic:   使用 us-east-1 的 SNS Topic
+Cognito:    Uses us-east-1 User Pool (us-east-1_l3E5QLXQS)
+SNS Topic:  Uses us-east-1 SNS Topic
 ```
 
 ---
 
-## 遇到的问题及解决方案
+## Issues Encountered and Solutions
 
-### 问题: IAM 角色名称冲突
-- **错误**: `EntityAlreadyExists: Role with name aws-devops-assessment-dispatch-task-execution-role already exists`
-- **原因**: us-east-1 和 eu-west-1 使用了相同的资源名称
-- **解决**: 为 eu-west-1 的资源添加 `-eu` 后缀
+### Issue: IAM Role Name Conflict
+- **Error**: `EntityAlreadyExists: Role with name aws-devops-assessment-dispatch-task-execution-role already exists`
+- **Cause**: us-east-1 and eu-west-1 used the same resource names
+- **Solution**: Added `-eu` suffix to eu-west-1 resources
 
-**修改的资源名称：**
+**Modified Resource Names:**
 - `aws-devops-assessment-greet` → `aws-devops-assessment-greet-eu`
 - `aws-devops-assessment-dispatch` → `aws-devops-assessment-dispatch-eu`
 - `aws-devops-assessment-ecs` → `aws-devops-assessment-ecs-eu`
@@ -140,6 +140,6 @@ SNS Topic:   使用 us-east-1 的 SNS Topic
 
 ---
 
-## 下一阶段
+## Next Phase
 
-✅ **已完成** → 进入 **[Phase 5: 测试开发](../05-test/plan.md)** 或 **[Phase 7: 文档编写](../07-docs/plan.md)**
+✅ **Complete** → Proceed to **[Phase 5: Test Development](../05-test/plan.md)** or **[Phase 7: Documentation](../07-docs/plan.md)**

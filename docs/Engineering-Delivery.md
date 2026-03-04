@@ -1,40 +1,40 @@
 # Engineering Delivery / Dev Workflow
 
-## Vibe Coding 阶段 - Team Agents 协作指南
+## Vibe Coding Phase - Team Agents Collaboration Guide
 
 ---
 
 ## 1. Repo Structure
 
-### 决策：Monorepo
+### Decision: Monorepo
 
 ```
 aws-assessment/
 ├── terraform/
-│   ├── modules/              # 共享模块
+│   ├── modules/              # Shared modules
 │   │   ├── api-gateway/
 │   │   ├── lambda-greet/
 │   │   ├── lambda-dispatch/
 │   │   ├── dynamodb/
 │   │   ├── ecs-fargate/
 │   │   └── cognito/
-│   ├── us-east-1/           # us-east-1 区域部署
-│   │   ├── main.tf          # 主配置
+│   ├── us-east-1/           # us-east-1 region deployment
+│   │   ├── main.tf          # Main configuration
 │   │   ├── backend.tf
 │   │   ├── providers.tf
-│   │   ├── cognito.tf       # Cognito 模块调用
-│   │   ├── greet.tf         # /greet 相关模块
-│   │   ├── dispatch.tf      # /dispatch 相关模块
-│   │   ├── api-gateway.tf   # API Gateway 模块
+│   │   ├── cognito.tf       # Cognito module invocation
+│   │   ├── greet.tf         # /greet related modules
+│   │   ├── dispatch.tf      # /dispatch related modules
+│   │   ├── api-gateway.tf   # API Gateway module
 │   │   ├── terraform.tfvars
 │   │   └── outputs.tf
-│   └── eu-west-1/           # eu-west-1 区域部署
-│       ├── main.tf          # 主配置
+│   └── eu-west-1/           # eu-west-1 region deployment
+│       ├── main.tf          # Main configuration
 │       ├── backend.tf
 │       ├── providers.tf
-│       ├── greet.tf         # /greet 相关模块
-│       ├── dispatch.tf      # /dispatch 相关模块
-│       ├── api-gateway.tf   # API Gateway 模块
+│       ├── greet.tf         # /greet related modules
+│       ├── dispatch.tf      # /dispatch related modules
+│       ├── api-gateway.tf   # API Gateway module
 │       ├── terraform.tfvars
 │       └── outputs.tf
 ├── tests/
@@ -48,131 +48,131 @@ aws-assessment/
 │   └── Task-Plan.md
 ├── .github/
 │   └── workflows/
-│       └── validate.yml     # CI/CD 流水线
+│       └── validate.yml     # CI/CD pipeline
 ├── README.md
 └── .gitignore
 ```
 
-**理由：** 单一仓库便于管理，代码共享，适合评估项目。
+**Rationale:** A single repository facilitates management, code sharing, and is suitable for assessment projects.
 
 ---
 
 ## 2. Branching Strategy
 
-### 决策：Trunk-Based Development
+### Decision: Trunk-Based Development
 
 ```
-main (直接提交)
+main (direct commits)
 ```
 
-**工作流：**
-1. 直接在 `main` 分支开发
-2. 提交前运行本地检查
-3. 提交后 CI/CD 自动验证
+**Workflow:**
+1. Develop directly on the `main` branch
+2. Run local checks before committing
+3. Automatic CI/CD verification after commit
 
-**理由：** 评估项目简单直接，无需复杂分支管理。
+**Rationale:** The assessment project is simple and straightforward, requiring no complex branch management.
 
 ---
 
 ## 3. Environment Strategy
 
-### 决策：单一环境
+### Decision: Single Environment
 
-**实际情况：** 只有一个部署环境，通过切换 SNS Topic ARN 区分开发/验收阶段
+**Actual Situation:** Only one deployment environment, distinguished between development/validation phases by switching SNS Topic ARN
 
-| 阶段 | SNS Topic ARN | terraform.tfvars |
-|------|---------------|-------------------|
-| **开发/验收** | `arn:aws:sns:us-east-1:160676960050:Candidate-Verification-Topic` | `sns_topic_arn = "arn:..."` |
+| Phase | SNS Topic ARN | terraform.tfvars |
+|-------|---------------|-------------------|
+| **Development/Validation** | `arn:aws:sns:us-east-1:160676960050:Candidate-Verification-Topic` | `sns_topic_arn = "arn:..."` |
 
-**切换方式：** 手动修改 `terraform.tfvars` 中的 `sns_topic_arn` 变量
+**Switching Method:** Manually modify the `sns_topic_arn` variable in `terraform.tfvars`
 
 ---
 
 ## 4. Local Dev Workflow
 
-### 决策：直接部署 + Plan 排查
+### Decision: Direct Deployment + Plan Troubleshooting
 
 ```
-1. 编辑 Terraform 代码
+1. Edit Terraform code
        │
        ▼
-2. terraform fmt          # 格式化
+2. terraform fmt          # Format
        │
        ▼
-3. terraform init         # 初始化
+3. terraform init         # Initialize
        │
        ▼
-4. terraform plan         # 预览变更
+4. terraform plan         # Preview changes
        │
        ▼
-5. terraform apply        # 部署到 AWS
+5. terraform apply        # Deploy to AWS
        │
        ▼
-6. 运行测试脚本验证
+6. Run test script for validation
        │
        ▼
-7. 根据结果调整
+7. Adjust based on results
        │
-       └──► 失败 → terraform plan 排查 → 重新部署
+       └──► Failure → terraform plan troubleshooting → redeploy
 ```
 
-**部署失败排查：** `terraform plan` 查看报错信息
+**Deployment Failure Troubleshooting:** Use `terraform plan` to view error messages
 
 ---
 
 ## 5. AI Agent Roles
 
-### 决策：4 个角色
+### Decision: 4 Roles
 
-| Agent | 职责 | 兼任 |
-|-------|------|------|
-| **Team Lead / Planner** | 任务分配、进度跟踪、协调 | - |
-| **IaC Agent / Reviewer** | 编写 Terraform 代码、代码审查、自检 | 兼任 Reviewer |
-| **Test Agent** | 编写测试脚本、验证功能 | - |
-| **Doc Agent** | 编写 README、文档 | - |
+| Agent | Responsibilities | Concurrent Role |
+|-------|------------------|-----------------|
+| **Team Lead / Planner** | Task allocation, progress tracking, coordination | - |
+| **IaC Agent / Reviewer** | Write Terraform code, code review, self-check | Concurrent Reviewer |
+| **Test Agent** | Write test scripts, validate functionality | - |
+| **Doc Agent** | Write README, documentation | - |
 
-### Agent 协作流程
+### Agent Collaboration Workflow
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                      Vibe Coding 流程                           │
+│                      Vibe Coding Workflow                        │
 └─────────────────────────────────────────────────────────────────┘
 
-  Team Lead 分配任务
+  Team Lead assigns tasks
         │
         ▼
-  IaC Agent 编写代码
+  IaC Agent writes code
         │
-        ├─► terraform fmt + validate + tfsec (自检)
-        │
-        ▼
-  Test Agent 验证功能
-        │
-        ├─► 运行测试脚本
+        ├─► terraform fmt + validate + tfsec (self-check)
         │
         ▼
-  验证通过？
-  ├─ 是 → Doc Agent 编写文档
+  Test Agent validates functionality
+        │
+        ├─► Run test scripts
+        │
+        ▼
+  Validation passed?
+  ├─ Yes → Doc Agent writes documentation
   │         │
   │         ▼
-  │    完成任务
+  │    Task completed
   │
-  └─ 否 → IaC Agent 修复问题
+  └─ No → IaC Agent fixes issues
              │
-             └──► 重新验证
+             └──► Re-validate
 ```
 
 ---
 
 ## 6. CI/CD Stages
 
-### 决策：按 PRD 要求，4 个 Stages
+### Decision: 4 Stages per PRD Requirements
 
-> **PRD 要求：** A DevOps engineer doesn't deploy from their laptop. Include a CI/CD pipeline configuration file that defines automated steps.
+> **PRD Requirement:** A DevOps engineer doesn't deploy from their laptop. Include a CI/CD pipeline configuration file that defines automated steps.
 
 ---
 
-### 6.1 Pipeline 架构图
+### 6.1 Pipeline Architecture Diagram
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
@@ -195,7 +195,7 @@ main (直接提交)
 │ terraform fmt │         │    tfsec      │         │               │
 │ terraform     │         │               │         │               │
 │   validate    │         │               │         │               │
-│ (两个区域)    │         │               │         │               │
+│ (both regions)│         │               │         │               │
 └───────┬───────┘         └───────┬───────┘         │               │
         │                         │                 │               │
         └────────────┬────────────┘                 │               │
@@ -210,7 +210,7 @@ main (直接提交)
         │  terraform plan        │                 │               │
         │  (eu-west-1)           │                 │               │
         │                        │                 │               │
-        │  ⚠️ 需要 AWS creds     │                 │               │
+        │  ⚠️ Requires AWS creds │                 │               │
         └────────────┬───────────┘                 │               │
                      │                             │               │
                      ▼                             │               │
@@ -219,10 +219,10 @@ main (直接提交)
         │  Test Execution        │                 │               │
         │     Placeholder        │                 │               │
         │                        │                 │               │
-        │  📍 测试脚本执行位置    │                 │               │
+        │  📍 Test script execution location      │               │
         │  integration_test.py   │                 │               │
         │                        │                 │               │
-        │  ⚠️ 需要 AWS creds     │                 │               │
+        │  ⚠️ Requires AWS creds │                 │               │
         └────────────────────────┘                 │               │
                                                    │               │
                                                    │               │
@@ -236,18 +236,18 @@ main (直接提交)
 
 ---
 
-### 6.2 各 Stage 详细说明
+### 6.2 Stage Details
 
-| Stage | PRD 要求 | 工具 | 检查内容 | 需要 AWS Creds |
-|-------|----------|------|----------|----------------|
-| **1. Lint/Validate** | Run standard IaC formatting and validation checks | `terraform fmt` + `terraform validate` | 代码格式、语法正确性（两个区域） | ❌ 不需要 |
-| **2. Security Scan** | Integrate a lightweight open-source static analysis tool | `tfsec` | 安全漏洞扫描（排除 .terraform 目录） | ❌ 不需要 |
-| **3. Plan** | Generate an infrastructure plan/diff | `terraform plan` | 变更预览（两个区域并行） | ✅ 需要 |
-| **4. Test Placeholder** | Add a step showing where automated test script would execute post-deployment | - | 测试执行位置占位符 | ✅ 需要 |
+| Stage | PRD Requirement | Tool | Check Content | Requires AWS Creds |
+|-------|-----------------|------|---------------|-------------------|
+| **1. Lint/Validate** | Run standard IaC formatting and validation checks | `terraform fmt` + `terraform validate` | Code format, syntax correctness (both regions) | ❌ No |
+| **2. Security Scan** | Integrate a lightweight open-source static analysis tool | `tfsec` | Security vulnerability scan (excluding .terraform directory) | ❌ No |
+| **3. Plan** | Generate an infrastructure plan/diff | `terraform plan` | Change preview (both regions in parallel) | ✅ Yes |
+| **4. Test Placeholder** | Add a step showing where automated test script would execute post-deployment | - | Test execution location placeholder | ✅ Yes |
 
 ---
 
-### 6.3 工作流配置文件
+### 6.3 Workflow Configuration File
 
 ```yaml
 # .github/workflows/validate.yml
@@ -310,7 +310,7 @@ jobs:
         uses: aquasecurity/tfsec-action@v1.0.3
         with:
           soft_fail: false
-          # 排除下载的 .terraform 模块目录
+          # Exclude downloaded .terraform module directories
 
   # ============================================================================
   # Stage 3: Plan
@@ -421,59 +421,59 @@ jobs:
 
 ---
 
-### 6.4 关键设计说明
+### 6.4 Key Design Notes
 
-| 设计点 | 说明 |
-|--------|------|
-| **Backend=false for Init (Stage 1)** | Lint/Validate 阶段不需要连接 S3 backend，使用 `-backend=false` 加速执行 |
-| **tfsec with exclusions** | 排除 `.terraform/` 目录，避免扫描下载的第三方模块 |
-| **Matrix Strategy (Stage 3)** | 两个区域的 Plan 并行执行，提高效率 |
-| **continue-on-error: true (Plan)** | PRD 允许不提供 AWS credentials，Plan 失败不阻塞流程 |
-| **Test Placeholder (Stage 4)** | 只展示测试执行位置，不真正执行（需要已部署的基础设施） |
+| Design Point | Description |
+|--------------|-------------|
+| **Backend=false for Init (Stage 1)** | Lint/Validate stage doesn't need to connect to S3 backend, uses `-backend=false` for faster execution |
+| **tfsec with exclusions** | Excludes `.terraform/` directory to avoid scanning downloaded third-party modules |
+| **Matrix Strategy (Stage 3)** | Plans for both regions execute in parallel for efficiency |
+| **continue-on-error: true (Plan)** | PRD allows not providing AWS credentials, Plan failure doesn't block the workflow |
+| **Test Placeholder (Stage 4)** | Only shows test execution location, doesn't actually execute (requires deployed infrastructure) |
 
 ---
 
-### 6.5 PRD 要求对照
+### 6.5 PRD Requirements Mapping
 
-| PRD 要求 | 实现方式 | 文件位置 |
-|----------|----------|----------|
+| PRD Requirement | Implementation | File Location |
+|-----------------|----------------|---------------|
 | Lint/Validate | `terraform fmt -check` + `terraform validate` | Stage 1 |
 | Security Scan | `aquasecurity/tfsec-action@v1.0.3` | Stage 2 |
-| Plan | `terraform plan -out=tfplan` (两个区域) | Stage 3 |
-| Test Execution Placeholder | 带注释的测试步骤 + 执行说明 | Stage 4 |
+| Plan | `terraform plan -out=tfplan` (both regions) | Stage 3 |
+| Test Execution Placeholder | Commented test step + execution instructions | Stage 4 |
 
 ---
 
-### 6.6 注意事项
+### 6.6 Notes
 
 > **Note from PRD:** "You do not need to provide AWS credentials to the CI/CD runner; we simply want to review your pipeline architecture and syntax."
 
-- **Stage 1 & 2**：不需要 AWS credentials，可以成功执行
-- **Stage 3 (Plan)**：需要 AWS credentials，但设置 `continue-on-error: true` 允许失败
-- **Stage 4 (Test)**：只展示架构，不真正执行测试
+- **Stage 1 & 2:** Don't require AWS credentials, can execute successfully
+- **Stage 3 (Plan):** Requires AWS credentials, but set `continue-on-error: true` to allow failure
+- **Stage 4 (Test):** Only shows architecture, doesn't actually execute tests
 
 ---
 
 ## 7. Code Review Gates
 
-### 决策：IaC Agent 自查 + Test Agent 验证
+### Decision: IaC Agent Self-Check + Test Agent Validation
 
-| Gate | 责任 Agent | 检查内容 | 工具 |
-|------|------------|----------|------|
-| **代码自检** | IaC Agent | 格式、语法、安全 | fmt + validate + tfsec |
-| **功能验证** | Test Agent | 端到端功能 | 测试脚本 |
+| Gate | Responsible Agent | Check Content | Tools |
+|------|-------------------|---------------|-------|
+| **Code Self-Check** | IaC Agent | Format, syntax, security | fmt + validate + tfsec |
+| **Functional Validation** | Test Agent | End-to-end functionality | Test scripts |
 
-**通过标准：**
-- terraform fmt 无错误
-- terraform validate 无错误
-- tfsec 无严重/高危漏洞
-- 测试脚本全部通过
+**Pass Criteria:**
+- terraform fmt with no errors
+- terraform validate with no errors
+- tfsec with no critical/high vulnerabilities
+- All test scripts pass
 
 ---
 
 ## 8. Test Pyramid / Validation Flow
 
-### 决策：Unit Test 足够
+### Decision: Unit Test Sufficient
 
 ```
         ┌─────────────┐
@@ -481,26 +481,26 @@ jobs:
         └─────────────┘
 
         ┌─────────────┐
-        │  E2E Test    │  ← 测试脚本：并发调用 4 个 API
-        └─────────────┘     验证响应、SNS 消息、延迟
+        │  E2E Test    │  ← Test script: concurrent calls to 4 APIs
+        └─────────────┘     Validate responses, SNS messages, latency
 ```
 
-**测试脚本验证内容：**
-1. Cognito 登录成功
-2. 4 个 API 端点并发调用成功
-3. 响应中的 region 字段正确
-4. 4 条 SNS 消息发送成功
-5. 延迟数据记录完整
+**Test Script Validation Content:**
+1. Cognito login successful
+2. 4 API endpoints concurrent calls successful
+3. Region field in responses correct
+4. 4 SNS messages sent successfully
+5. Latency data recorded completely
 
-**测试流程：**
+**Test Workflow:**
 ```bash
-# 1. 创建虚拟环境并安装依赖
+# 1. Create virtual environment and install dependencies
 cd tests
 python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
 
-# 2. 从 Terraform outputs 获取配置
+# 2. Get configuration from Terraform outputs
 cd ../terraform/us-east-1
 API_URL_USEAST=$(terraform output -raw api_gateway_url)
 COGNITO_POOL_ID=$(terraform output -raw cognito_pool_id)
@@ -509,7 +509,7 @@ COGNITO_CLIENT_ID=$(terraform output -raw cognito_client_id)
 cd ../eu-west-1
 API_URL_EUWEST=$(terraform output -raw api_gateway_url)
 
-# 3. 运行测试脚本（设置环境变量或修改配置）
+# 3. Run test script (set environment variables or modify configuration)
 cd ../tests
 export COGNITO_USER_POOL_ID="$COGNITO_POOL_ID"
 export COGNITO_CLIENT_ID="$COGNITO_CLIENT_ID"
@@ -523,97 +523,97 @@ python integration_test.py --email YOUR_EMAIL --password YOUR_PASSWORD
 
 ## 9. Release / Rollback
 
-### 决策：简单直接
+### Decision: Simple and Direct
 
-| 操作 | 方式 |
-|------|------|
-| **Release** | 提交到 GitHub 主分支 |
-| **Rollback** | `terraform destroy` + `terraform apply` 重新部署 |
-| **多版本** | 不需要 |
+| Operation | Method |
+|-----------|--------|
+| **Release** | Commit to GitHub main branch |
+| **Rollback** | `terraform destroy` + `terraform apply` to redeploy |
+| **Multi-Version** | Not needed |
 
-**Release 流程：**
+**Release Workflow:**
 ```
-1. 本地测试通过
+1. Local tests pass
 2. git add .
 3. git commit -m "feat: implement /greet endpoint"
 4. git push
 ```
 
-**Rollback 流程：**
+**Rollback Workflow:**
 ```
-1. terraform destroy  # 销毁失败的部署
-2. 修复问题
-3. terraform apply   # 重新部署
+1. terraform destroy  # Destroy failed deployment
+2. Fix issues
+3. terraform apply   # Redeploy
 ```
 
 ---
 
-## 10. 完整工作流总结
+## 10. Complete Workflow Summary
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                   开发到部署完整流程                            │
+│                   Complete Development to Deployment Workflow    │
 └─────────────────────────────────────────────────────────────────┘
 
-  1. Team Lead 分配任务
+  1. Team Lead assigns task
          │
          ▼
-  2. IaC Agent 编写代码
+  2. IaC Agent writes code
          │
-         ├─► terraform fmt + validate + tfsec (本地自检)
+         ├─► terraform fmt + validate + tfsec (local self-check)
          │
          ▼
   3. git commit + push
          │
          ▼
-  4. CI/CD 自动验证 (GitHub Actions)
+  4. CI/CD automatic validation (GitHub Actions)
          │
-         ├─► Lint/Validate 通过？
-         ├─► Security Scan 通过？
-         ├─► Plan 成功？
+         ├─► Lint/Validate passed?
+         ├─► Security Scan passed?
+         ├─► Plan successful?
          │
          ▼
-  5. 部署到 AWS
+  5. Deploy to AWS
          │
          ├─► cd us-east-1 && terraform apply
-         ├─► 手动复制 Cognito 配置
+         ├─► Manually copy Cognito configuration
          └─► cd eu-west-1 && terraform apply
          │
          ▼
-  6. Test Agent 验证
+  6. Test Agent validates
          │
-         ├─► 运行测试脚本
-         ├─► 检查 SNS 消息发送
+         ├─► Run test scripts
+         ├─► Check SNS message sending
          │
          ▼
-  7. 验证通过？
-  ├─ 是 → Doc Agent 编写文档 → 完成
+  7. Validation passed?
+  ├─ Yes → Doc Agent writes documentation → Complete
   │
-  └─ 否 → IaC Agent 修复 → 回到步骤 2
+  └─ No → IaC Agent fixes → Return to step 2
 ```
 
 ---
 
-## 11. 关键命令速查
+## 11. Key Commands Reference
 
 ```bash
-# Terraform 命令
-terraform fmt              # 格式化
-terraform fmt -check       # 检查格式
-terraform validate         # 验证语法
-terraform init            # 初始化
-terraform plan            # 预览变更
-terraform apply           # 部署
-terraform destroy         # 销毁
+# Terraform commands
+terraform fmt              # Format
+terraform fmt -check       # Check format
+terraform validate         # Validate syntax
+terraform init            # Initialize
+terraform plan            # Preview changes
+terraform apply           # Deploy
+terraform destroy         # Destroy
 
-# 安全扫描
-tfsec .                    # 扫描安全问题
+# Security scan
+tfsec .                    # Scan for security issues
 
-# 测试
+# Test
 python tests/integration_test.py
 ```
 
 ---
 
-*文档版本: 1.0*
-*创建日期: 2026-03-02*
+*Document Version: 1.0*
+*Created: 2026-03-02*
