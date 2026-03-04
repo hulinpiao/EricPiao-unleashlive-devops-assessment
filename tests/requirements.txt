@@ -1,0 +1,10 @@
+# AWS DevOps Assessment - Test Requirements
+
+# AWS SDK
+boto3>=1.34.0
+
+# HTTP Client (async)
+aiohttp>=3.9.0
+
+# HTTP Client (sync fallback)
+requests>=2.31.0
